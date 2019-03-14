@@ -21,6 +21,7 @@
  */
 
 #include <fcntl.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -29,6 +30,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/un.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include <event.h>
@@ -57,6 +59,7 @@ void ping(int, short, void *);
 void pong(int, short, void *);
 void logPrint(const char *format, ...);
 char *timestamp();
+void sigCHLD(int);
 
 struct event pingtimer, pongtimer;
 int gotpong;
@@ -99,6 +102,9 @@ int main(int argc, char **argv)
     /* make everything nonblocking */
     fcntl(0, F_SETFL, O_NONBLOCK);
     fcntl(sock, F_SETFL, O_NONBLOCK);
+
+    /* make sure command processes get cleaned up */
+    signal(SIGCHLD, sigCHLD);
 
     /* set up libevent */
     event_init();
@@ -390,4 +396,10 @@ char *timestamp()
         sprintf(tsbuf, "? ?");
     }
     return tsbuf;
+}
+
+void sigCHLD(int sig) {
+    int status;
+    while (waitpid(-1, &status, WNOHANG) > 0)
+        ; /* reap them all */
 }
