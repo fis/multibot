@@ -297,6 +297,9 @@ void handleMessage(int argc, char **args)
             setenv("IRC_NICK", nick, 1);
             setenv("IRC_IDENT", ident, 1);
             setenv("IRC_HOST", host, 1);
+            setenv("IRC_COMMAND", argc > 1 ? args[1] : "", 1);
+            setenv("IRC_TARGET", argc > 2 ? args[2] : "", 1);
+            setenv("IRC_MESSAGE", argc > 3 ? args[3] : "", 1);
 
             chdir(COMMANDS_DIR);
             execv(newargs[0] + sizeof(COMMANDS_DIR), newargs);
