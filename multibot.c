@@ -38,6 +38,7 @@
 #include "buffer.h"
 
 char *nick, *channel, *sockName;
+char **extraChannels;
 
 /* configuration stuff */
 #define COMMANDS_DIR    "multibot_cmds"
@@ -73,13 +74,14 @@ int main(int argc, char **argv)
     struct event ircEv, sockEv;
     struct timeval tv;
 
-    if (argc != 4) {
-        fprintf(stderr, "Use: multibot <user> <channel> <log>\n");
+    if (argc < 4) {
+        fprintf(stderr, "Use: multibot <user> <channel> <log> [supplementary channels]\n");
         return 1;
     }
 
     nick = argv[1];
     channel = argv[2];
+    extraChannels = &argv[4];
     INIT_BUFFER(ircBuf);
     INIT_BUFFER(sockBuf);
 
@@ -146,10 +148,13 @@ void ircRead(int fd, short i0, void *i1)
         fflush(logfile);
 
         if (ircBuf.buf[0] == ':') {
-            /* perhaps this is time to join the channel */
+            /* perhaps this is time to join the channel(s) */
             if (!joined) {
+                char **ch;
                 joined = 1;
                 logPrint("JOIN #%s\r\n", channel);
+                for (ch = extraChannels; *ch; ch++)
+                    logPrint("JOIN #%s\r\n", *ch);
             }
 
             /* separate out the pieces */
