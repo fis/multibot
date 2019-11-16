@@ -37,7 +37,7 @@
 
 #include "buffer.h"
 
-char *nick, *channel, *sockName;
+char *nick, *channel, *pass, *sockName;
 char **extraChannels;
 
 /* configuration stuff */
@@ -75,18 +75,22 @@ int main(int argc, char **argv)
     struct timeval tv;
 
     if (argc < 4) {
-        fprintf(stderr, "Use: multibot <user> <channel> <log> [supplementary channels]\n");
+        fprintf(stderr, "Use: multibot <user> <channel> <log> [<pass> <ch2> <ch3> ...]\n");
         return 1;
     }
 
     nick = argv[1];
     channel = argv[2];
-    extraChannels = &argv[4];
+    pass = argc < 5 ? "" : argv[4];
+    extraChannels = &argv[argc < 5 ? argc : 5];
     INIT_BUFFER(ircBuf);
     INIT_BUFFER(sockBuf);
 
     SF(logfile, fopen, NULL, (argv[3], "a"));
 
+    if (*pass) {
+        logPrint("PASS %s\r\n", pass);
+    }
     logPrint("USER %s localhost localhost :MultiBot\r\n", nick);
     logPrint("NICK :%s\r\n", nick);
 
