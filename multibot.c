@@ -399,7 +399,7 @@ char *timestamp()
 {
     struct timeval tv;
     if (gettimeofday(&tv, NULL) == 0) {
-        sprintf(tsbuf, "%d %d", tv.tv_sec, tv.tv_usec);
+        sprintf(tsbuf, "%ld %ld", (long) tv.tv_sec, (long) tv.tv_usec);
     } else {
         sprintf(tsbuf, "? ?");
     }
